@@ -1,5 +1,5 @@
 {
-  "name": "@neflyte/jake",
+  "name": "jake",
   "description": "JavaScript build tool, similar to Make or Rake",
   "keywords": [
     "build",
@@ -30,18 +30,10 @@
     "async": "0.9.x"
   },
   "devDependencies": {
-    "q": "0.9.x"
+    "q": "0.9.x",
+    "@types/node": "^10.12.24"
   },
   "engines": {
     "node": "*"
-  },
-  "bugs": {
-    "url": "https://github.com/neflyte/jake/issues"
-  },
-  "homepage": "https://github.com/neflyte/jake#readme",
-  "directories": {
-    "doc": "docs",
-    "lib": "lib",
-    "test": "test"
   }
 }
