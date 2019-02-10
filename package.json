@@ -1,5 +1,5 @@
 {
-  "name": "jake",
+  "name": "@neflyte/jake",
   "description": "JavaScript build tool, similar to Make or Rake",
   "keywords": [
     "build",
@@ -7,7 +7,7 @@
     "make",
     "rake"
   ],
-  "version": "8.0.19-sync",
+  "version": "8.0.19-syncts",
   "author": "Matthew Eernisse <mde@fleegix.org> (http://fleegix.org)",
   "license": "Apache-2.0",
   "bin": {
