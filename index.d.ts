@@ -1,32 +1,32 @@
+/// <reference types="node" />
+
 // Type definitions for jake
 // Project: https://github.com/mde/jake
 // Definitions by: Kon <http://phyzkit.net/>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.2
 
-/// <reference types="node" />
-
 /**
- * Complets an asynchronous task, allowing Jake's execution to proceed to the next task
+ * Completes an asynchronous task, allowing Jake's execution to proceed to the next task
  * @param value A value to return from the task.
  */
 declare function complete(value?: any): void;
 
 /**
- * Creates a description for a Jake Task (or FileTask, DirectoryTask). When invoked, the description that iscreated will be associated with whatever Task is created next.
+ * Creates a description for a Jake Task (or FileTask, DirectoryTask). When invoked, the description that is created will be associated with whatever Task is created next.
  * @param description The description for the Task
  */
 declare function desc(description:string): void;
 
 /**
  * Creates a Jake DirectoryTask. Can be used as a prerequisite for FileTasks, or for simply ensuring a directory exists for use with a Task's action.
- * @param name The name of the DiretoryTask
+ * @param name The name of the DirectoryTask
  */
 declare function directory(name:string): jake.DirectoryTask;
 
 /**
  * Causes Jake execution to abort with an error. Allows passing an optional error code, which will be used to set the exit-code of exiting process.
- * @param err The error to thow when aborting execution. If this argument is an Error object, it will simply be thrown. If a String, it will be used as the error-message. (If it is a multi-line String, the first line will be used as the Error message, and the remaining lines will be used as the error-stack.)
+ * @param err The error to throw when aborting execution. If this argument is an Error object, it will simply be thrown. If a String, it will be used as the error-message. (If it is a multi-line String, the first line will be used as the Error message, and the remaining lines will be used as the error-stack.)
  */
 declare function fail(...err:string[]): void;
 declare function fail(...err:Error[]): void;
@@ -34,7 +34,7 @@ declare function fail(...err:any[]): void;
 
 /**
  * Creates a Jake FileTask.
- * @name name The name of the Task
+ * @param name The name of the Task
  * @param prereqs Prerequisites to be run before this task
  * @param action The action to perform for this task
  * @param opts Perform this task asynchronously. If you flag a task with this option, you must call the global `complete` method inside the task's action, for execution to proceed to the next task.
@@ -43,7 +43,7 @@ declare function file(name:string, prereqs?:string[], action?:(this: jake.FileTa
 
 /**
  * Creates Jake FileTask from regex patterns
- * @name name/pattern of the Task
+ * @param pattern name/regex of the Task
  * @param source calculated from the name pattern
  * @param prereqs Prerequisites to be run before this task
  * @param action The action to perform for this task
@@ -71,9 +71,12 @@ declare function task(name:string, opts?:jake.TaskOptions, action?:(this: jake.T
 /**
  * @param name The name of the NpmPublishTask
  * @param packageFiles The files to include in the package
- * @param definition A function that creates the package definition
  */
 declare function npmPublishTask(name:string, packageFiles:string[]): jake.NpmPublishTask;
+/**
+ * @param name The name of the NpmPublishTask
+ * @param definition A function that creates the package definition
+ */
 declare function npmPublishTask(name:string, definition?:()=>void): jake.NpmPublishTask;
 
 
@@ -99,13 +102,15 @@ declare namespace jake{
 	 * Note that this command can only copy files and directories; it does not perform globbing (so arguments like '*.txt' are not possible).
 	 * @param path the file/directory to copy,
 	 * @param destination the destination.
+	 * @param opts additional options
+	 * @param callback Callback function
 	 */
 	export function cpR(path:string, destination:string, opts?:UtilOptions, callback?:()=>void): void;
 	export function cpR(path:string, destination:string, callback?:(err:Error)=>void): void;
 
 	/**
 	 * The jake.readdirR utility gives you a recursive directory listing, giving you output somewhat similar to the Unix find command. It only works with a directory name, and does not perform filtering or globbing.
-	 * @return an array of filepaths for all files in the 'pkg' directory, and all its subdirectories.
+	 * @return an array of file paths for all files in the 'pkg' directory, and all its subdirectories.
 	 */
 	export function readdirR(name:string, opts?:UtilOptions): string[];
 
@@ -145,8 +150,8 @@ declare namespace jake{
 	/**
 	 * @event cmdStart When a new command begins to run. Passes one arg, the command being run.
 	 * @event cmdEnd When a command finishes. Passes one arg, the command being run.
-	 * @event stdout When the stdout for the child-process recieves data. This streams the stdout data. Passes one arg, the chunk of data.
-	 * @event stderr When the stderr for the child-process recieves data. This streams the stderr data. Passes one arg, the chunk of data.
+	 * @event stdout When the stdout for the child-process receives data. This streams the stdout data. Passes one arg, the chunk of data.
+	 * @event stderr When the stderr for the child-process receives data. This streams the stderr data. Passes one arg, the chunk of data.
 	 * @event error When a shell-command
 	 */
 	export interface Exec extends NodeJS.EventEmitter {
@@ -201,6 +206,11 @@ declare namespace jake{
 		 * number of parllel async tasks
 		*/
 		parallelLimit?: number;
+		/**
+		 * Run prerequisites asynchronously
+		 * @default false
+		 */
+		syncPrereqs?: boolean;
 	}
 
 	/**
@@ -210,7 +220,7 @@ declare namespace jake{
 	 */
 	export class Task extends NodeJS.EventEmitter {
 		/**
-		 * @name name The name of the Task
+		 * @param name The name of the Task
 		 * @param prereqs Prerequisites to be run before this task
 		 * @param action The action to perform for this task
 		 * @param opts Perform this task asynchronously. If you flag a task with this option, you must call the global `complete` method inside the task's action, for execution to proceed to the next task.
@@ -363,22 +373,22 @@ declare namespace jake{
 		name: string;
 
 		/**
-		 * If set to true, uses the `jar` utility to create a .jar archive of the pagckage
+		 * If set to true, uses the `jar` utility to create a .jar archive of the package
 		 */
 		needJar: boolean;
 
 		/**
-         * If set to true, uses the `tar` utility to create a gzip .tgz archive of the pagckage
+         * If set to true, uses the `tar` utility to create a gzip .tgz archive of the package
          */
         needTar: boolean;
 
         /**
-         * If set to true, uses the `tar` utility to create a bzip2 .bz2 archive of the pagckage
+         * If set to true, uses the `tar` utility to create a bzip2 .bz2 archive of the package
          */
 		needTarBz2: boolean;
 
 		/**
-         * If set to true, uses the `zip` utility to create a .zip archive of the pagckage
+         * If set to true, uses the `zip` utility to create a .zip archive of the package
 		 */
 		needZip: boolean;
 
