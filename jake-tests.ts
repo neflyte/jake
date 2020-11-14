@@ -1,17 +1,16 @@
 // https://github.com/mde/jake
-
-
 import path = require("path");
 
 desc('This is the default task.');
-task('default', function (params) {
+task('default', (params) => {
   console.log('This is the default task.');
+  console.log(`params: ${JSON.stringify(params)}`);
 });
 
-desc('This task has prerequisites.');
+desc('This task has synchronous prerequisites.');
 task('hasPrereqs', ['foo', 'bar', 'baz'], function () {
   console.log('Ran some prereqs first.');
-});
+}, { syncPrereqs: true });
 
 desc('This is an asynchronous task.');
 task('asyncTask', {async: true}, function () {
@@ -180,7 +179,8 @@ task('test', {async: true}, function () {
   }, {printStdout: true});
 });
 
-var ex = jake.createExec(['do_thing.sh'], {printStdout: true});
+let ex = jake.createExec('do_thing.sh', {printStdout: true});
+ex = jake.createExec(['do_thing.sh'], {printStdout: true});
 ex.addListener('error', function (msg, code) {
   if (code == 127) {
     console.log("Couldn't find do_thing script, trying do_other_thing");
@@ -200,8 +200,8 @@ task('echo', {async: true}, function () {
 });
 
 function hoge(){
-  var t = new jake.PackageTask('fonebone', 'v0.1.2112', function () {
-    var fileList = [
+  const t = new jake.PackageTask('fonebone', 'v0.1.2112', function () {
+    const fileList = [
       'Jakefile'
     , 'README.md'
     , 'package.json'
@@ -215,7 +215,7 @@ function hoge(){
   });
 }
 
-var list = new jake.FileList();
+const list = new jake.FileList();
 list.include('foo/*.txt');
 list.include(['bar/*.txt', 'README.md']);
 list.include('Makefile', 'package.json');
@@ -224,8 +224,8 @@ list.exclude(/foo\/src.*.txt/);
 console.log(list.toArray());
 
 
-var t = new jake.TestTask('fonebone', function () {
-  var fileList = [
+const t = new jake.TestTask('fonebone', function () {
+  const fileList = [
     'tests/*'
   , 'lib/adapters/**/test.js'
   ];
@@ -234,8 +234,8 @@ var t = new jake.TestTask('fonebone', function () {
   this.testName = 'testMainAndAdapters';
 });
 
-var assert = require('assert')
-  , tests;
+const assert = require('assert');
+let tests: Record<string, Function>;
 
 tests = {
   'sync test': function () {
@@ -256,7 +256,7 @@ tests = {
 
 //module.exports = tests;
 
-var p = new jake.NpmPublishTask('jake', [
+const p = new jake.NpmPublishTask('jake', [
   'Makefile'
 , 'Jakefile'
 , 'README.md'
@@ -265,3 +265,10 @@ var p = new jake.NpmPublishTask('jake', [
 , 'bin/*'
 , 'tests/*'
 ]);
+
+run();
+run('foo', 'bar');
+
+const tTask: jake.Task = jake.Task['foo'];
+tTask.invoke();
+tTask.invoke('foo', 'bar');

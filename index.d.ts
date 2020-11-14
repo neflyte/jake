@@ -1,10 +1,13 @@
 /// <reference types="node" />
 
 // Type definitions for jake
-// Project: https://github.com/mde/jake
-// Definitions by: Kon <http://phyzkit.net/>
-// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.2
+// Based on definitions by: Kon <http://phyzkit.net/>
+
+/**
+ * Invoke Jake directly with optional arguments
+ * @param args Jake CLI arguments
+ */
+declare function run(...args: any[]): void;
 
 /**
  * Completes an asynchronous task, allowing Jake's execution to proceed to the next task
@@ -33,13 +36,23 @@ declare function fail(...err:Error[]): void;
 declare function fail(...err:any[]): void;
 
 /**
+ * The shape of a FileTask action
+ */
+declare type TFileTaskAction = (this: jake.FileTask) => void;
+
+/**
  * Creates a Jake FileTask.
  * @param name The name of the Task
  * @param prereqs Prerequisites to be run before this task
  * @param action The action to perform for this task
  * @param opts Perform this task asynchronously. If you flag a task with this option, you must call the global `complete` method inside the task's action, for execution to proceed to the next task.
  */
-declare function file(name:string, prereqs?:string[], action?:(this: jake.FileTask)=>void, opts?:jake.FileTaskOptions): jake.FileTask;
+declare function file(name:string, prereqs?:string[], action?:TFileTaskAction, opts?:jake.FileTaskOptions): jake.FileTask;
+
+/**
+ * The shape of a Rule (FileTask) action
+ */
+declare type TRuleAction = () => void;
 
 /**
  * Creates Jake FileTask from regex patterns
@@ -49,14 +62,24 @@ declare function file(name:string, prereqs?:string[], action?:(this: jake.FileTa
  * @param action The action to perform for this task
  * @param opts Perform this task asynchronously. If you flag a task with this option, you must call the global `complete` method inside the task's action, for execution to proceed to the next task.
  */
-declare function rule(pattern: RegExp, source: string | { (name: string): string; }, prereqs?: string[], action?: () => void, opts?: jake.TaskOptions): void;
+declare function rule(pattern: RegExp, source: string | { (name: string): string; }, prereqs?: string[], action?: TRuleAction, opts?: jake.TaskOptions): void;
+
+/**
+ * The shape of the namespace scope function
+ */
+declare type TNamespaceScope = () => void;
 
 /**
  * Creates a namespace which allows logical grouping of tasks, and prevents name-collisions with task-names. Namespaces can be nested inside of other namespaces.
  * @param name The name of the namespace
  * @param scope The enclosing scope for the namespaced tasks
  */
-declare function namespace(name:string, scope:()=>void): void;
+declare function namespace(name:string, scope:TNamespaceScope): void;
+
+/**
+ * The shape of a Task action
+ */
+declare type TTaskAction = (this: jake.Task, ...params: any[]) => any;
 
 /**
  * @param name The name of the Task
@@ -64,9 +87,14 @@ declare function namespace(name:string, scope:()=>void): void;
  * @param action The action to perform for this task
  * @param opts
  */
-declare function task(name:string, prereqs?:string[], action?:(this: jake.Task, ...params:any[])=>any, opts?:jake.TaskOptions): jake.Task;
-declare function task(name:string, action?:(this: jake.Task, ...params:any[])=>any, opts?:jake.TaskOptions): jake.Task;
-declare function task(name:string, opts?:jake.TaskOptions, action?:(this: jake.Task, ...params:any[])=>any): jake.Task;
+declare function task(name:string, prereqs?:string[], action?:TTaskAction, opts?:jake.TaskOptions): jake.Task;
+declare function task(name:string, action?:TTaskAction, opts?:jake.TaskOptions): jake.Task;
+declare function task(name:string, opts?:jake.TaskOptions, action?:TTaskAction): jake.Task;
+
+/**
+ * The shape of the NPMPublishTask definition
+ */
+declare type TNPMPublishTaskDefinition = () => void;
 
 /**
  * @param name The name of the NpmPublishTask
@@ -77,7 +105,7 @@ declare function npmPublishTask(name:string, packageFiles:string[]): jake.NpmPub
  * @param name The name of the NpmPublishTask
  * @param definition A function that creates the package definition
  */
-declare function npmPublishTask(name:string, definition?:()=>void): jake.NpmPublishTask;
+declare function npmPublishTask(name:string, definition?:TNPMPublishTaskDefinition): jake.NpmPublishTask;
 
 
 declare namespace jake{
@@ -86,16 +114,20 @@ declare namespace jake{
 	// File-utils //////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////
 
-	interface UtilOptions{
+	export interface UtilOptions{
 		silent?: boolean;
 	}
+
+	export type TMkdirPCallback = (er:Error, made:any) => void;
 
 	/**
 	 * The jake.mkdirP utility recursively creates a set of nested directories. It will not throw an error if any of the directories already exists.
 	 * https://github.com/substack/node-mkdirp
 	 */
-	export function mkdirP(name:string, mode?:string, f?:(er:Error, made:any)=>void): void;
-	export function mkdirP(name:string, f?:(er:Error, made:any)=>void): void;
+	export function mkdirP(name:string, mode?:string, f?:TMkdirPCallback): void;
+	export function mkdirP(name:string, f?:TMkdirPCallback): void;
+
+	export type TCpRCallback = (err?: Error) => void;
 
 	/**
 	 * The jake.cpR utility does a recursive copy of a file or directory.
@@ -105,8 +137,8 @@ declare namespace jake{
 	 * @param opts additional options
 	 * @param callback Callback function
 	 */
-	export function cpR(path:string, destination:string, opts?:UtilOptions, callback?:()=>void): void;
-	export function cpR(path:string, destination:string, callback?:(err:Error)=>void): void;
+	export function cpR(path:string, destination:string, opts?:UtilOptions, callback?:TCpRCallback): void;
+	export function cpR(path:string, destination:string, callback?:TCpRCallback): void;
 
 	/**
 	 * The jake.readdirR utility gives you a recursive directory listing, giving you output somewhat similar to the Unix find command. It only works with a directory name, and does not perform filtering or globbing.
@@ -123,28 +155,26 @@ declare namespace jake{
 	// Running shell-commands ////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////////////////////
 
-	interface ExecOptions{
+	export interface ExecOptions{
 		/**
 		 * print to stdout, default false
 		 */
-
 		printStdout?:boolean;
 		/**
 		 * print to stderr, default false
 		 */
 		printStderr?:boolean;
-
 		/**
 		 * stop execution on error, default true
 		 */
 		breakOnError?:boolean;
-
 		/**
 		*
 		*/
 		windowsVerbatimArguments?: boolean
 	}
-	export function exec(cmds:string[], callback?:()=>void, opts?:ExecOptions):void;
+	export type TExecCallback = () => void;
+	export function exec(cmds:string[], callback?:TExecCallback, opts?:ExecOptions):void;
 
 
 	/**
@@ -159,16 +189,14 @@ declare namespace jake{
 		run(): void;
 	}
 
-	export function createExec(cmds:string[], callback?:()=>void, opts?:ExecOptions ):Exec;
-	export function createExec(cmds:string[], opts?:ExecOptions,  callback?:()=>void):Exec;
-	export function createExec(cmds:string,   callback?:()=>void, opts?:ExecOptions ):Exec;
-	export function createExec(cmds:string,   opts?:ExecOptions,  callback?:()=>void):Exec;
+	export function createExec(cmds:string[] | string, callback?:TExecCallback, opts?:ExecOptions ):Exec;
+	export function createExec(cmds:string[] | string, opts?:ExecOptions,  callback?:TExecCallback):Exec;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Logging and output ////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	interface Logger{
+	export interface Logger{
 		log(value:any): void;
 		error(value:any): void;
 	}
@@ -179,16 +207,13 @@ declare namespace jake{
 	// program ////////////////////////////////////////////////////////////////////////////////////////////////////
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	export var program: {
-		opts: {
-			[name:string]: any;
-			quiet: boolean;
-		};
+	export interface IProgram {
+		opts: Record<string, any> & { quiet: boolean; };
 		taskNames: string[];
-        taskArgs: string[];
-        envVars: { [key:string]: string; };
-	};
-
+		taskArgs: string[];
+		envVars: Record<string, string>;
+	}
+	export var program: IProgram;
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	// Tasks /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,7 +226,6 @@ declare namespace jake{
 		 * @default false
 		 */
 		async?: boolean;
-
 		/**
 		 * number of parllel async tasks
 		*/
@@ -220,22 +244,33 @@ declare namespace jake{
 	 */
 	export class Task extends NodeJS.EventEmitter {
 		/**
+		 * Allow accessing properties by string
+		 */
+		[key: string]: any;
+
+		/**
+		 * Task Constructor
 		 * @param name The name of the Task
 		 * @param prereqs Prerequisites to be run before this task
 		 * @param action The action to perform for this task
 		 * @param opts Perform this task asynchronously. If you flag a task with this option, you must call the global `complete` method inside the task's action, for execution to proceed to the next task.
 		 */
-		constructor(name:string, prereqs?:string[], action?:(this: Task)=>void, opts?:TaskOptions);
+		constructor(name:string, prereqs?:string[], action?:TTaskAction, opts?:TaskOptions);
 
 		/**
 		 * Runs prerequisites, then this task. If the task has already been run, will not run the task again.
 		 */
-		invoke(): void;
+		invoke(...args: any[]): void;
 
 		/**
 		 * Runs this task, without running any prerequisites. If the task has already been run, it will still run it again.
 		 */
 		reenable(): void;
+
+		/**
+		 * Re-enables and runs the task
+		 */
+		execute(...args: any[]): void;
 
 		addListener(event: string, listener: Function): this;
 		on(event: string, listener: Function): this;
@@ -281,10 +316,10 @@ declare namespace jake{
 		 * @param action The action to perform to create this file
 		 * @param opts Perform this task asynchronously. If you flag a task with this option, you must call the global `complete` method inside the task's action, for execution to proceed to the next task.
 	     */
-		constructor(name:string, prereqs?:string[], action?:(this: FileTask)=>void, opts?:FileTaskOptions);
+		constructor(name:string, prereqs?:string[], action?:TFileTaskAction, opts?:FileTaskOptions);
 	}
 
-	interface FileFilter{
+	export interface FileFilter{
 		(filename:string): boolean;
 	}
 
@@ -420,7 +455,7 @@ declare namespace jake{
 
 	export class NpmPublishTask{
 		constructor(name:string, packageFiles:string[]);
-		constructor(name:string, definition?:()=>void);
+		constructor(name:string, definition?:TNPMPublishTaskDefinition);
 	}
 
 	export function addListener(event: string, listener: Function): NodeJS.EventEmitter;
